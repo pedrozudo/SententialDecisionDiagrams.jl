@@ -1,4 +1,4 @@
-# Sdd.jl
+# SDD.jl
 
 
 Julia wrapper package to interactively use [Sententical Decision Diagrams (SDD)](http://reasoning.cs.ucla.edu/sdd/).
