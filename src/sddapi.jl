@@ -1,16 +1,24 @@
 module SddLibrary
 
 
-@static if Sys.isunix()
-    @static if Sys.islinux()
-        const LIBSDD = "../deps/sdd-2.0/Linux/libsdd"
-    elseif Sys.isdarwin
-        const LIBSDD = "../deps/sdd-2.0/Darwin/libsdd"
-    else
-        LoadError("sddapi.jl", 0, "Sdd library only available on Linux and Darwin")
-    end
-else
-    LoadError("sddapi.jl", 0, "Sdd library only available on Linux and Darwin")
+# @static if Sys.isunix()
+#     @static if Sys.islinux()
+#         const LIBSDD = "../deps/sdd-2.0/Linux/libsdd"
+#     elseif Sys.isdarwin
+#         const LIBSDD = "../deps/sdd-2.0/Darwin/libsdd"
+#     else
+#         LoadError("sddapi.jl", 0, "Sdd library only available on Linux and Darwin")
+#     end
+# else
+#     LoadError("sddapi.jl", 0, "Sdd library only available on Linux and Darwin")
+# end
+
+
+try
+  @compat Libdl.dlopen(joinpath("libsdd.so"), Libdl.RTLD_LAZY|Libdl.RTLD_DEEPBIND|Libdl.RTLD_GLOBAL)
+catch e
+  error("Could not load z3 shared libraries")
+  rethrow(e)
 end
 
 const SddSize = Csize_t
