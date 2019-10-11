@@ -1,4 +1,4 @@
-module Sdd
+module SDD
 
 include("sddapi.jl")
 include("compiler.jl")
