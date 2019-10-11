@@ -1,5 +1,5 @@
 authors = ["pedrozudo <pedro.zuidbergdosmartires@cs.kuleuven.be>"]
-name = "SDD.jl"
+name = "SDD"
 uuid = "7fb4d062-ec23-11e9-0b7c-0d74514dd3ea"
 version = "0.1.0"
 
