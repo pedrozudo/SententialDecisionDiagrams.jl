@@ -17,8 +17,8 @@ git clone https://github.com/pedrozudo/SDD.jl
 ```
 cd into the examples directory and run any of the test files
 ```
-cd SDD.jl
-julia examples/test-1.jl
+cd SDD.jl.examples
+julia test-1.jl
 ```
 
 ## References

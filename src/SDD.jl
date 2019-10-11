@@ -157,6 +157,7 @@ end
 # # SDD FUNCTIONS
 
 # SDD FILE I/O
+#TODO make this safer
 function read_sdd(filename::String, manager::SddManager)::SddNode
     node = SddLibrary.sdd_read(str_to_char(filename), manager.manager)
     return SddNode(node, manager.manager)
@@ -227,6 +228,7 @@ function free(vtree::VTree)
 end
 
 # VTREE FILE I/O
+# TODO make this safer
 function read_vtree(filename::String)::VTree
     vtree = SddLibrary.sdd_vtree_read(str_to_char(filename))
     return VTree(vtree)
