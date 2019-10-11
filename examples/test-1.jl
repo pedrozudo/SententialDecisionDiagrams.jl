@@ -1,5 +1,4 @@
-include("../src/Sdd.jl")
-using .Sdd
+using SDD
 
 var_count = 4
 var_order = [2,1,4,3]

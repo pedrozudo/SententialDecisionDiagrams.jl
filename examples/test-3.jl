@@ -1,5 +1,4 @@
-include("../src/Sdd.jl")
-using .Sdd
+using SDD
 
 # set up vtree and manager
 v = Sdd.read_vtree("input/opt-swap.vtree")
