@@ -3,7 +3,7 @@ module SddLibrary
 
 @static if Sys.isunix()
     @static if Sys.islinux()
-        const LIBSDD = "../deps/sdd-2.0/Linux/libsdd"
+        const LIBSDD = "$(@__FILE__)/../deps/sdd-2.0/Linux/libsdd"
     elseif Sys.isdarwin
         const LIBSDD = "../deps/sdd-2.0/Darwin/libsdd"
     else
