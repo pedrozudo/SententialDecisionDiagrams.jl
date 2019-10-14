@@ -41,5 +41,5 @@ SDD.deref(γ)
 
 println("saving vtree & shared sdd ...")
 
-SDD.dot("output/shared-vtree.dot", v)
-SDD.shared_save_as_dot("output/shared.dot", m)
+SDD.dot("$(@__DIR__)/output/shared-vtree.dot", v)
+SDD.shared_save_as_dot("$(@__DIR__)/output/shared.dot", m)

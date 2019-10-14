@@ -15,10 +15,10 @@ Clone the repo:
 ```
 git clone https://github.com/pedrozudo/SDD.jl
 ```
-cd into the examples directory and run any of the test files
+cd into the cloned directory and run any of the test files
 ```
 cd SDD.jl.examples
-julia test-1.jl
+julia examples/test-1.jl
 ```
 
 ## References

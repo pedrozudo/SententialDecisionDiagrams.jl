@@ -13,6 +13,6 @@ a, b, c, d = [literal(i,m) for i in 1:4]
 println("done")
 
 println("saving sdd and vtree ... ")
-SDD.dot("output/sdd.dot",α)
-SDD.dot("output/vtree.dot",v)
+SDD.dot("$(@__DIR__)/output/sdd.dot",α)
+SDD.dot("$(@__DIR__)/output/vtree.dot",v)
 println("done")

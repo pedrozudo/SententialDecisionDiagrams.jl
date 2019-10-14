@@ -1,11 +1,11 @@
 using SDD
 
 # set up vtree and manager
-v = SDD.read_vtree("input/opt-swap.vtree")
+v = SDD.read_vtree("$(@__DIR__)/input/opt-swap.vtree")
 m = manager(v)
 
 println("reading sdd from file ...")
-α = SDD.read_sdd("input/opt-swap.sdd", m)
+α = SDD.read_sdd("$(@__DIR__)/input/opt-swap.sdd", m)
 println("sdd size = $(SDD.size(α))")
 
 # ref, perform the minimization, and then de-ref
