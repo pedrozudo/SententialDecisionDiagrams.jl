@@ -3,9 +3,9 @@ module SddLibrary
 
 @static if Sys.isunix()
     @static if Sys.islinux()
-        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/Linux/libsdd"
-    elseif Sys.isdarwin
-        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/Darwin/libsdd"
+        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Linux/libsdd"
+    elseif Sys.isapple()
+        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Darwin/libsdd"
     else
         LoadError("sddapi.jl", 0, "Sdd library only available on Linux and Darwin")
     end
@@ -45,55 +45,48 @@ function sdd_manager_free(manager::Ptr{SddManager_c})
     ccall((:sdd_manager_free, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
 function sdd_manager_print(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_print, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_print, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
 function sdd_manager_auto_gc_and_minimize_on(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_auto_gc_and_minimize_on, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_auto_gc_and_minimize_on, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
 function sdd_manager_auto_gc_and_minimize_off(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_auto_gc_and_minimize_off, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_auto_gc_and_minimize_off, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
 function sdd_manager_is_auto_gc_and_minimize_on(manager::Ptr{SddManager_c})::Cint
-    return ccall((:sdd_manager_auto_gc_and_minimize_off, LIBSDD), Cint, (Ptr{SddManager_c},), manager)
+    return ccall((:sdd_manager_is_auto_gc_and_minimize_on, LIBSDD), Cint, (Ptr{SddManager_c},), manager)
 end
-# void sdd_manager_set_minimize_function(SddVtreeSearchFunc func, SddManager* manager);
+# TODO void sdd_manager_set_minimize_function(SddVtreeSearchFunc func, SddManager* manager);
 function sdd_manager_unset_minimize_function(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_unset_minimize_function, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_unset_minimize_function, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
 function sdd_manager_options(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_options, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_options, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
-# void sdd_manager_set_options(void* options, SddManager* manager);
+# TODO void sdd_manager_set_options(void* options, SddManager* manager);
 function sdd_manager_is_var_used(var::SddLiteral, manager::Ptr{SddManager_c})::Cint
     return ccall((:sdd_manager_is_var_used, LIBSDD), Cint, (SddLiteral, Ptr{SddManager_c}), var, manager)
 end
 function sdd_manager_vtree_of_var(var::SddLiteral, manager::Ptr{SddManager_c})::Ptr{VTree_c}
     return ccall((:sdd_manager_vtree_of_var, LIBSDD), Ptr{VTree_c}, (SddLiteral, Ptr{SddManager_c}), var, manager)
 end
-# Vtree* sdd_manager_lca_of_literals(int count, SddLiteral* literals, SddManager* manager);
+# TODO Vtree* sdd_manager_lca_of_literals(int count, SddLiteral* literals, SddManager* manager);
 function sdd_manager_var_count(manager::Ptr{SddManager_c})::SddLiteral
     return ccall((:sdd_manager_var_count, LIBSDD), SddLiteral, (Ptr{SddManager_c},), manager)
 end
-# void sdd_manager_var_order(SddLiteral* var_order, SddManager *manager);
+# TODO void sdd_manager_var_order(SddLiteral* var_order, SddManager *manager);
 function sdd_manager_add_var_before_first(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_add_var_before_first, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_add_var_before_first, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
 function sdd_manager_add_var_after_last(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_add_var_after_last, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_add_var_after_last, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
 function sdd_manager_add_var_before(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_add_var_before, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_add_var_before, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
 function sdd_manager_add_var_after(manager::Ptr{SddManager_c})
-    return ccall((:sdd_manager_add_var_after, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+    ccall((:sdd_manager_add_var_after, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
-
-
-
-
-
-
-
 
 # TERMINAL SDDS
 function sdd_manager_true(manager::Ptr{SddManager_c})::Ptr{SddNode_c}
@@ -235,7 +228,6 @@ for fnc in vtree_size_fnames_c
     end
 end
 
-
 # CREATING VTREES
 function sdd_vtree_new(var_count::SddLiteral, vtree_type::Ptr{UInt8})::Ptr{VTree_c}
     return ccall((:sdd_vtree_new, LIBSDD), Ptr{VTree_c}, (SddLiteral, Ptr{UInt8}), var_count, vtree_type)
@@ -250,7 +242,6 @@ function sdd_vtree_free(vtree::Ptr{VTree_c})
     ccall((:sdd_vtree_free, LIBSDD), Cvoid, (Ptr{VTree_c},), vtree)
 end
 
-
 # VTREE FILE I/O
 function sdd_vtree_read(filename::Ptr{UInt8})::Ptr{VTree_c}
     return ccall((:sdd_vtree_read, LIBSDD), Ptr{VTree_c}, (Ptr{UInt8},), filename)
@@ -262,17 +253,47 @@ function sdd_vtree_save_as_dot(filename::Ptr{UInt8}, vtree::Ptr{VTree_c})
     ccall((:sdd_vtree_save_as_dot, LIBSDD), Cvoid, (Ptr{UInt8}, Ptr{VTree_c}), filename, vtree)
 end
 
+# // SDD MANAGER VTREE
+function sdd_manager_vtree(manager::Ptr{SddManager_c})::Ptr{VTree_c}
+    return ccall((:sdd_manager_vtree, LIBSDD), Ptr{VTree_c}, (Ptr{SddManager_c},), manager)
+end
+function sdd_manager_vtree_copy(manager::Ptr{SddManager_c})::Ptr{VTree_c}
+    return ccall((:sdd_manager_vtree_copy, LIBSDD), Ptr{VTree_c}, (Ptr{SddManager_c},), manager)
+end
 
-# # SDD MANAGER VTREE
-#
-# # VTREE NAVIGATION
-#
+# // VTREE NAVIGATION
+function sdd_vtree_left(vtree::Ptr{VTree_c})::Ptr{VTree_c}
+    return ccall((:sdd_vtree_left, LIBSDD), Ptr{VTree_c}, (Ptr{VTree_c},), vtree)
+end
+function sdd_vtree_right(vtree::Ptr{VTree_c})::Ptr{VTree_c}
+    return ccall((:sdd_vtree_right, LIBSDD), Ptr{VTree_c}, (Ptr{VTree_c},), vtree)
+end
+function sdd_vtree_parent(vtree::Ptr{VTree_c})::Ptr{VTree_c}
+    return ccall((:sdd_vtree_parent, LIBSDD), Ptr{VTree_c}, (Ptr{VTree_c},), vtree)
+end
+
 # # VTREE FUNCTIONS
 #
-# # VTREE/SDD EDIT OPERATIONS
-#
-# # LIMITS FOR VTREE/SDD EDIT OPERATIONS
-#
+# VTREE/SDD EDIT OPERATIONS
+function sdd_vtree_rotate_left(vtree::Ptr{VTree_c}, manager::Ptr{SddManager_c}, limited::Cint)::Cint
+    return ccall((:sdd_vtree_rotate_left, LIBSDD), Cint, (Ptr{VTree_c},Ptr{SddManager_c}, Cint), vtree, manager, limited)
+end
+function sdd_vtree_rotate_right(vtree::Ptr{VTree_c}, manager::Ptr{SddManager_c}, limited::Cint)::Cint
+    return ccall((:sdd_vtree_rotate_right, LIBSDD), Cint, (Ptr{VTree_c},Ptr{SddManager_c}, Cint), vtree, manager, limited)
+end
+function sdd_vtree_swap(vtree::Ptr{VTree_c}, manager::Ptr{SddManager_c}, limited::Cint)::Cint
+    return ccall((:sdd_vtree_swap, LIBSDD), Cint, (Ptr{VTree_c}, Ptr{SddManager_c}, Cint), vtree, manager, limited)
+end
+
+
+# LIMITS FOR VTREE/SDD EDIT OPERATIONS
+function sdd_manager_init_vtree_size_limit(vtree::Ptr{VTree_c}, manager::Ptr{SddManager_c})
+    ccall((:sdd_manager_init_vtree_size_limit, LIBSDD), Cvoid, (Ptr{VTree_c}, Ptr{SddManager_c}), vtree, manager)
+end
+function sdd_manager_update_vtree_size_limit(manager::Ptr{SddManager_c})
+    ccall((:sdd_manager_update_vtree_size_limit, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
+end
+
 # # VTREE STATE
 
 # GARBAGE COLLECTION
@@ -358,9 +379,6 @@ end
 
 
 # TO BE WRAPPED
-
-
-#
 # // SDD FUNCTIONS
 # SddSize sdd_id(SddNode* node);
 # int sdd_garbage_collected(SddNode* node, SddSize id);
@@ -368,16 +386,7 @@ end
 # SddNode* sdd_copy(SddNode* node, SddManager* dest_manager);
 # SddNode* sdd_rename_variables(SddNode* node, SddLiteral* variable_map, SddManager* manager);
 # int* sdd_variables(SddNode* node, SddManager* manager);
-#
-# // SDD MANAGER VTREE
-# Vtree* sdd_manager_vtree(const SddManager* manager);
-# Vtree* sdd_manager_vtree_copy(const SddManager* manager);
-#
-# // VTREE NAVIGATION
-# Vtree* sdd_vtree_left(const Vtree* vtree);
-# Vtree* sdd_vtree_right(const Vtree* vtree);
-# Vtree* sdd_vtree_parent(const Vtree* vtree);
-#
+
 # // VTREE FUNCTIONS
 # int sdd_vtree_is_leaf(const Vtree* vtree);
 # int sdd_vtree_is_sub(const Vtree* vtree1, const Vtree* vtree2);
@@ -386,15 +395,8 @@ end
 # SddLiteral sdd_vtree_var(const Vtree* vtree);
 # SddLiteral sdd_vtree_position(const Vtree* vtree);
 # Vtree** sdd_vtree_location(Vtree* vtree, SddManager* manager);
-#
-# // VTREE/SDD EDIT OPERATIONS
-# int sdd_vtree_rotate_left(Vtree* vtree, SddManager* manager, int limited);
-# int sdd_vtree_rotate_right(Vtree* vtree, SddManager* manager, int limited);
-# int sdd_vtree_swap(Vtree* vtree, SddManager* manager, int limited);
-#
-# // LIMITS FOR VTREE/SDD EDIT OPERATIONS
-# void sdd_manager_init_vtree_size_limit(Vtree* vtree, SddManager* manager);
-# void sdd_manager_update_vtree_size_limit(SddManager* manager);
+
+
 #
 # // VTREE STATE
 # int sdd_vtree_bit(const Vtree* vtree);
