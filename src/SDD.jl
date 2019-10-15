@@ -449,9 +449,6 @@ Base.:~(node::SddNode) = negate(node)
 ↔(left::SddNode, right::SddNode) = equiv(left,right)
 
 # FNF methods
-function read_cnf(filename::String)
-
-end
 
 
 
