@@ -3,9 +3,9 @@ module SddLibrary
 
 @static if Sys.isunix()
     @static if Sys.islinux()
-        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/Linux/libsdd"
+        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Linux/libsdd"
     elseif Sys.isapple()
-        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/Darwin/libsdd"
+        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Darwin/libsdd"
     else
         LoadError("sddapi.jl", 0, "Sdd library only available on Linux and Darwin")
     end
