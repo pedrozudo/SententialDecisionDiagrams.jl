@@ -1,3 +1,4 @@
+#TODO add bangs for functions that modify argument(s)
 module SDD
 
 include("sddapi.jl")
