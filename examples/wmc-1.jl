@@ -3,11 +3,10 @@ using .SDD
 
 # set up vtree and manager
 vtree = SDD.read_vtree("$(@__DIR__)/input/simple.vtree")
-sdd = SDD.manager(vtree)
+manager = SDD.manager(vtree)
 
-println("Created an SDD with $(SDD.var_count(sdd)) variables")
-
-root = SDD.read_cnf("$(@__DIR__)/input/simple.cnf")
+println("Created an SDD with $(SDD.var_count(manager)) variables")
+root = SDD.read_cnf("$(@__DIR__)/input/simple.cnf", manager)
 #     # For DNF functions use `read_dnf_file`
 #     # If the vtree is not given, you can also use 'from_cnf_file`
 #

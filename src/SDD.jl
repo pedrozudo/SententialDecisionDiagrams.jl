@@ -2,10 +2,10 @@
 module SDD
 
 include("sddapi.jl")
-include("fnf.jl")
+include("normal_form.jl")
 
 using .SddLibrary
-using .FNF
+using .NormalForm
 
 struct VTree
     vtree::Ptr{SddLibrary.VTree_c}
@@ -448,8 +448,16 @@ Base.:|(node1::SddNode, node2::SddNode) = disjoin(node1,node2)
 Base.:~(node::SddNode) = negate(node)
 ↔(left::SddNode, right::SddNode) = equiv(left,right)
 
-# FNF methods
 
+# FNF methods
+function read_cnf(filename::String, manager::SddManager)::SddNode
+    cnf = NormalForm.read_cnf(filename)
+    return NormalForm.fnf_to_sdd(cnf, manager.manager)
+end
+function read_dnf(filename::String, manager::SddManager)::SddNode
+    dnf = NormalForm.read_dnf(filename)
+    return NormalForm.fnf_to_sdd(dnf, manager.manager)
+end
 
 
 export ↔

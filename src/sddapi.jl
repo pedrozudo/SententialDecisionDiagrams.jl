@@ -19,11 +19,11 @@ const SddNodeSize = Cuint
 const SddRefCount = Cuint
 const SddModelCount = Culonglong
 const SddWMC = Cdouble
-const SddLiteral = UInt64
+const SddLiteral = Int64
 
 const SddID = SddSize
 
-const SddBoolOp = Cushort
+const BoolOp = Cushort
 
 struct VTree_c end
 struct SddNode_c end
@@ -100,8 +100,8 @@ function sdd_manager_literal(literal::UInt64, manager::Ptr{SddManager_c})::Ptr{S
 end
 
 # SDD QUERIES AND TRANSFORMATIONS
-function sdd_apply(node1::Ptr{SddNode_c}, node2::Ptr{SddNode_c}, op::SddBoolOp ,manager::Ptr{SddManager_c})::Ptr{SddNode_c}
-    return ccall((:sdd_apply, LIBSDD), Ptr{SddNode_c}, (Ptr{SddNode_c}, Ptr{SddNode_c}, SddBoolOp, Ptr{SddManager_c}), node1, node2, op, manager)
+function sdd_apply(node1::Ptr{SddNode_c}, node2::Ptr{SddNode_c}, op::BoolOp ,manager::Ptr{SddManager_c})::Ptr{SddNode_c}
+    return ccall((:sdd_apply, LIBSDD), Ptr{SddNode_c}, (Ptr{SddNode_c}, Ptr{SddNode_c}, BoolOp, Ptr{SddManager_c}), node1, node2, op, manager)
 end
 function sdd_conjoin(node1::Ptr{SddNode_c}, node2::Ptr{SddNode_c}, manager::Ptr{SddManager_c})::Ptr{SddNode_c}
     return ccall((:sdd_conjoin, LIBSDD), Ptr{SddNode_c}, (Ptr{SddNode_c}, Ptr{SddNode_c}, Ptr{SddManager_c}), node1, node2, manager)
