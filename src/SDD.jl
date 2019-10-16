@@ -5,7 +5,6 @@ include("sddapi.jl")
 include("normal_form.jl")
 
 using .SddLibrary
-using .NormalForm
 
 struct VTree
     vtree::Ptr{SddLibrary.VTree_c}
@@ -451,12 +450,15 @@ Base.:~(node::SddNode) = negate(node)
 
 # FNF methods
 function read_cnf(filename::String, manager::SddManager)::SddNode
-    cnf = NormalForm.read_cnf(filename)
-    return NormalForm.fnf_to_sdd(cnf, manager.manager)
+    cnf = read_cnf(filename)
+    sdd_node = fnf_to_sdd(cnf, manager.manager)
+    return SddNode(sdd_node, manager.manager)
+
 end
 function read_dnf(filename::String, manager::SddManager)::SddNode
-    dnf = NormalForm.read_dnf(filename)
-    return NormalForm.fnf_to_sdd(dnf, manager.manager)
+    dnf = read_dnf(filename)
+    sdd_node = fnf_to_sdd(dnf, manager.manager)
+    return SddNode(sdd_node, manager.manager)
 end
 
 

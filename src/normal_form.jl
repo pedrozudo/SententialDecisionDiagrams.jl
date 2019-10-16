@@ -1,17 +1,10 @@
-module NormalForm
-
-include("sddapi.jl")
-
-using .SddLibrary
-
-struct VTree_c end
 mutable struct LitSet
     id::SddLibrary.SddSize
     literal_count::SddLibrary.SddLiteral
     literals::Array{SddLibrary.SddLiteral}
     op::SddLibrary.BoolOp
-    vtree::VTree_c
-    bit::UInt8
+    vtree::SddLibrary.VTree_c
+    litset_bit::UInt8
     LitSet() = new()
 end
 mutable struct Fnf
@@ -45,33 +38,47 @@ function parse_fnf(filename::String, op::SddLibrary.BoolOp)::Fnf
         if l_split[1]=="c"
             continue
         elseif l_split[1]=="p"
-            if op==0 @assert(l_split[2]=="cnf") else @assert(l_split[2]=="dnf") end
+            # if op==0 @assert(l_split[2]=="cnf") else @assert(l_split[2]=="dnf") end
+            @assert(l_split[2]=="cnf")
             var_count = parse(SddLibrary.SddLiteral, l_split[3])
             litset_count = parse(SddLibrary.SddSize, l_split[4])
             break
         end
     end
 
-    fnf = Fnf(var_count, litset_count, Array{LitSet}[], op)
-
-
+    litsets = LitSet[]
     for c in lines[n_extra_lines+1:end]
+        id += 1
+        literals = SddLibrary.SddLiteral[]
         terms = split(c)
         for t in terms
             if t=="0" break end
-            lit = parse(SddLibrary.SddLiteral, t)
-            println(t)
+            push!(literals, parse(SddLibrary.SddLiteral, t))
         end
-        println(clause)
-    # for k in lines
-    #     k_split = split(k)
-    #     if (k_split[1]=="c") | (k_split[1]=="p") continue end
-    #     @assert(k_split[length(k_split)]=="0")
-    #     println(k)
-    # end
+
+        clause = LitSet()
+        clause.id = id
+        clause.literal_count = length(terms)-1
+        clause.op = 1-op
+        clause.literals = literals
+        clause.litset_bit = 0
+
+        push!(litsets, clause)
     end
 
 
+    fnf = Fnf(var_count, litset_count, litsets, op)
+    return fnf
+end
+
+
+
+
+
+
+function fnf_to_sdd(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c})::Ptr{SddLibrary.SddNode_c}
+
+    println(3)
     exit()
 end
 
@@ -80,49 +87,11 @@ end
 
 
 
-
-
-
-
-  # // read in clauses
-  # // assume longest possible clause is #-vars * 2
-  # LitSet* clause;
-  # SddLiteral* temp_clause = (SddLiteral*)calloc(cnf->var_count*2,sizeof(SddLiteral));
-  # SddLiteral lit;
-  # SddLiteral lit_index;
-  # for(SddSize clause_index = 0; clause_index < cnf->litset_count; clause_index++) {
-  #   lit_index = 0;
-  #   while (1) { // read a clause
-  #     lit = cnf_int_strtok();
-  #     if (lit == 0) break;
-  #     test_parse_fnf_file(lit_index >= cnf->var_count*2,
-  #                         "Unexpected long clause.");
-  #     temp_clause[lit_index] = lit;
-  #     lit_index++;
-  #   }
-  #   clause = &(cnf->litsets[clause_index]);
-  #   clause->id = id++;
-  #   clause->bit = 0;
-  #   clause->literal_count = lit_index;
-  #   clause->literals = (SddLiteral*)calloc(clause->literal_count,sizeof(SddLiteral));
-  #   for(lit_index = 0; lit_index < clause->literal_count; lit_index++)
-  #     clause->literals[lit_index] = temp_clause[lit_index];
-  # }
-
-
-
-
 # void free_fnf(Fnf* fnf);
 #
-# SddNode* fnf_to_sdd(Fnf* fnf, SddManager* manager);
 #
 # /****************************************************************************************
 #  * forward references
 #  ****************************************************************************************/
 #
 # void sort_litsets_by_lca(LitSet** litsets, SddSize litset_count, SddManager* manager);
-
-
-
-
-end
