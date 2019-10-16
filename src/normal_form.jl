@@ -3,7 +3,7 @@ mutable struct LitSet
     literal_count::SddLibrary.SddLiteral
     literals::Array{SddLibrary.SddLiteral}
     op::SddLibrary.BoolOp
-    vtree::SddLibrary.VTree_c
+    vtree::Ptr{SddLibrary.VTree_c}
     litset_bit::UInt8
     LitSet() = new()
 end
@@ -53,9 +53,11 @@ function parse_fnf(filename::String, op::SddLibrary.BoolOp)::Fnf
         id += 1
         literals = SddLibrary.SddLiteral[]
         terms = split(c)
-        for t in terms
-            if t=="0" break end
-            push!(literals, parse(SddLibrary.SddLiteral, t))
+        literals = Array{SddLibrary.SddLiteral}(undef, 2var_count)
+        for i in 1:length(terms)
+            if terms[i]== "0" break end
+            literals[i] = parse(SddLibrary.SddLiteral,terms[i])
+            #TODO add test if i>2varcount
         end
         clause = LitSet()
         clause.id = id
@@ -98,10 +100,9 @@ end
 function fnf_to_sdd_auto(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, options)::Ptr{SddLibrary.SddNode_c}
     node = ONE(manager,fnf.op)
     count = fnf.litset_count
-    println(fnf.litsets[1].vtree)
     for i in 1:count
-        sort_litsets_by_lca(fnf.litsets[i:end], count-i, manager)
-        SddLibrary.sdd_ref(node, manager)
+        sort_litsets_by_lca(fnf.litsets[i:end], manager)
+        # SddLibrary.sdd_ref(node, manager)
 
     # println(fnf.litsets[1].vtree)
     end
@@ -250,9 +251,11 @@ end
 
 
 
-function sort_litsets_by_lca(litsets::Array{LitSet}, size::SddLibrary.SddSize, manager::Ptr{SddLibrary.SddManager_c})
+function sort_litsets_by_lca(litsets::Array{LitSet}, manager::Ptr{SddLibrary.SddManager_c})
+
     for ls in litsets
         ls.vtree = SddLibrary.sdd_manager_lca_of_literals(ls.literal_count, ls.literals, manager)
+
     end
 
     # return fnf
