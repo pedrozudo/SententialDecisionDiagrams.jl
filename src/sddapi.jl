@@ -14,6 +14,7 @@ else
 end
 
 
+
 const SddSize = Csize_t
 const SddNodeSize = Cuint
 const SddRefCount = Cuint
@@ -24,6 +25,9 @@ const SddLiteral = Int64
 const SddID = SddSize
 
 const BoolOp = Cushort
+const CONJOIN = convert(BoolOp, 0)
+const DISJOIN = convert(BoolOp, 1)
+
 
 struct VTree_c end
 struct SddNode_c end
@@ -60,17 +64,19 @@ end
 function sdd_manager_unset_minimize_function(manager::Ptr{SddManager_c})
     ccall((:sdd_manager_unset_minimize_function, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
 end
-function sdd_manager_options(manager::Ptr{SddManager_c})
-    ccall((:sdd_manager_options, LIBSDD), Cvoid, (Ptr{SddManager_c},), manager)
-end
-# TODO void sdd_manager_set_options(void* options, SddManager* manager);
+# function sdd_manager_options(manager::Ptr{SddManager_c})
+#     ccall((:sdd_manager_options, LIBSDD), Ptr{Cvoid}, (Ptr{SddManager_c},), manager)
+# end
+# void sdd_manager_set_options(void* options, SddManager* manager);
 function sdd_manager_is_var_used(var::SddLiteral, manager::Ptr{SddManager_c})::Cint
     return ccall((:sdd_manager_is_var_used, LIBSDD), Cint, (SddLiteral, Ptr{SddManager_c}), var, manager)
 end
 function sdd_manager_vtree_of_var(var::SddLiteral, manager::Ptr{SddManager_c})::Ptr{VTree_c}
     return ccall((:sdd_manager_vtree_of_var, LIBSDD), Ptr{VTree_c}, (SddLiteral, Ptr{SddManager_c}), var, manager)
 end
-# TODO Vtree* sdd_manager_lca_of_literals(int count, SddLiteral* literals, SddManager* manager);
+function sdd_manager_lca_of_literals(count::SddLiteral, literals::Union{Ptr{SddLiteral},Array{SddLiteral,1}}, manager::Ptr{SddManager_c})::Ptr{VTree_c}
+    return ccall((:sdd_manager_vtree_of_var, LIBSDD), Ptr{VTree_c}, (Int32, Ptr{SddLiteral}, Ptr{SddManager_c}), count, literals, manager)
+end
 function sdd_manager_var_count(manager::Ptr{SddManager_c})::SddLiteral
     return ccall((:sdd_manager_var_count, LIBSDD), SddLiteral, (Ptr{SddManager_c},), manager)
 end

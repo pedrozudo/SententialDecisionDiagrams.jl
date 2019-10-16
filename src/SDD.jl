@@ -1,10 +1,13 @@
 #TODO add bangs for functions that modify argument(s)
 module SDD
 
+using Parameters
+
 include("sddapi.jl")
 include("normal_form.jl")
 
 using .SddLibrary
+
 
 struct VTree
     vtree::Ptr{SddLibrary.VTree_c}
@@ -449,15 +452,20 @@ Base.:~(node::SddNode) = negate(node)
 
 
 # FNF methods
-function read_cnf(filename::String, manager::SddManager)::SddNode
-    cnf = read_cnf(filename)
-    sdd_node = fnf_to_sdd(cnf, manager.manager)
-    return SddNode(sdd_node, manager.manager)
-
+@with_kw struct CompilerOptions
+    vtree_search_mode::Int32 = -1
+    post_search::Bool = false
+    verbose::Bool = false
 end
-function read_dnf(filename::String, manager::SddManager)::SddNode
+
+function read_cnf(filename::String, manager::SddManager; compiler_options=CompilerOptions())::SddNode
+    cnf = read_cnf(filename)
+    sdd_node = fnf_to_sdd(cnf, manager.manager, compiler_options)
+    return SddNode(sdd_node, manager.manager)
+end
+function read_dnf(filename::String, manager::SddManager; compiler_options=CompilerOptions())::SddNode
     dnf = read_dnf(filename)
-    sdd_node = fnf_to_sdd(dnf, manager.manager)
+    sdd_node = fnf_to_sdd(dnf, manager.manager, compiler_options)
     return SddNode(sdd_node, manager.manager)
 end
 
