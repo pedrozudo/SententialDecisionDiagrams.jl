@@ -102,8 +102,8 @@ end
 function sdd_manager_false(manager::Ptr{SddManager_c})::Ptr{SddNode_c}
     return ccall((:sdd_manager_false, LIBSDD), Ptr{SddNode_c}, (Ptr{SddManager_c},), manager)
 end
-function sdd_manager_literal(literal::UInt64, manager::Ptr{SddManager_c})::Ptr{SddNode_c}
-    return ccall((:sdd_manager_literal, LIBSDD), Ptr{SddNode_c}, (UInt64, Ptr{SddManager_c}), literal, manager)
+function sdd_manager_literal(literal::SddLiteral, manager::Ptr{SddManager_c})::Ptr{SddNode_c}
+    return ccall((:sdd_manager_literal, LIBSDD), Ptr{SddNode_c}, (SddLiteral, Ptr{SddManager_c}), literal, manager)
 end
 
 # SDD QUERIES AND TRANSFORMATIONS

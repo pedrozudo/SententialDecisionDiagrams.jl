@@ -68,10 +68,7 @@ function parse_fnf(filename::String, op::SddLibrary.BoolOp)::Fnf
         clause.litset_bit = 0
         push!(litsets, clause)
     end
-
-
-    fnf = Fnf(var_count, litset_count, litsets, op)
-    return fnf
+    return Fnf(var_count, litset_count, litsets, op)
 end
 
 
@@ -97,104 +94,56 @@ function fnf_to_sdd(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, options)::P
     end
 end
 
-
-
 function fnf_to_sdd_auto(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, options)::Ptr{SddLibrary.SddNode_c}
     # TODO verbose print stuff
+    verbose = options.verbose
+    op = fnf.op
     node = ONE(manager,fnf.op)
     count = fnf.litset_count
     litsets = view(fnf.litsets,:)
     for i in 1:count
+        #TODO possible without copying?
         litsets[i:count] =  sort_litsets_by_lca(view(litsets,i:count), manager)
         SddLibrary.sdd_ref(node, manager)
-        # l = apply_litset()
-        exit()
+        l = apply_litset(litsets[i], manager)
+        SddLibrary.sdd_deref(node, manager)
+        node = SddLibrary.sdd_apply(l,node,op,manager)
     end
-    #
-    # return node
-
-
-    exit()
+    println(litsets)
+    return node
 end
-
-# SddNode* fnf_to_sdd_auto(Fnf* fnf, SddManager* manager) {
-#   SddCompilerOptions* options = sdd_manager_options(manager);
-#   int verbose      = options->verbose;
-#   BoolOp op        = fnf->op;
-#   SddSize count    = fnf->litset_count;
-#   LitSet** litsets = (LitSet**) malloc(count*sizeof(LitSet*));
-#   for (SddSize i=0; i<count; i++) litsets[i] = fnf->litsets + i;
-#
-#   if(verbose) { printf("\nclauses: %ld ",count); fflush(stdout); }
-#   SddNode* node = ONE(manager,op);
-#   for(int i=0; i<count; i++) {
-#     sort_litsets_by_lca(litsets+i,count-i,manager);
-#     sdd_ref(node,manager);
-#     SddNode* l = apply_litset(litsets[i],manager);
-#     sdd_deref(node,manager);
-#     node = sdd_apply(l,node,op,manager);
-#     if(verbose) { printf("%ld ",count-i-1); fflush(stdout); }
-#   }
-#   free(litsets);
-#   return node;
-# }
-
 
 function fnf_to_sdd_manual(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, options)::Ptr{SddLibrary.SddNode_c}
-    exit()
+    verbose = options.verbose
+    period = options.vtree_search_mode
+    op = fnf.op
+    count = fnf.litset_count
+    litsets = view(fnf.litsets,:)
+    node = ONE(manager, op)
+    for i in 1:count
+        if (period>0) && (i>1) && ((i-1)%period==0)
+            SddLibrary.sdd_ref(node, manager)
+            SddLibrary.sdd_manager_minimize_limited(manager)
+            SddLibrary.sdd_deref(node, manager)
+            #TODO possible without copying?
+            litsets[i:count] = sort_litsets_by_lca(view(litsets,i:count), manager)
+        end
+        l = apply_litset(litsets[i], manager)
+        node = SddLibrary.sdd_apply(l, node, op, manager)
+    end
+    return node
 end
 
-
-
-#
-# SddNode* fnf_to_sdd_manual(Fnf* fnf, SddManager* manager) {
-#   SddCompilerOptions* options = sdd_manager_options(manager);
-#   int verbose      = options->verbose;
-#   int period       = options->vtree_search_mode;
-#   BoolOp op        = fnf->op;
-#   SddSize count    = fnf->litset_count;
-#   LitSet** litsets = (LitSet**) malloc(count*sizeof(LitSet*));
-#   for (SddSize i=0; i<count; i++) litsets[i] = fnf->litsets + i;
-#   sort_litsets_by_lca(litsets,count,manager);
-#
-#   if(verbose) { printf("\nclauses: %ld ",count); fflush(stdout); }
-#   SddNode* node = ONE(manager,op);
-#   for(int i=0; i<count; i++) {
-#     if(period > 0 && i > 0 && i%period==0) {
-#       // after every period clauses
-#       sdd_ref(node,manager);
-#       if(options->verbose) { printf("* "); fflush(stdout); }
-#       sdd_manager_minimize_limited(manager);
-#       sdd_deref(node,manager);
-#       sort_litsets_by_lca(litsets+i,count-i,manager);
-#     }
-#
-#     SddNode* l = apply_litset(litsets[i],manager);
-#     node = sdd_apply(l,node,op,manager);
-#     if(verbose) { printf("%ld ",count-i-1); fflush(stdout); }
-#   }
-#   free(litsets);
-#   return node;
-# }
-#
-
-# //converts a clause/term into an equivalent sdd
-# SddNode* apply_litset(LitSet* litset, SddManager* manager) {
-#
-#   BoolOp op            = litset->op; //conjoin (term) or disjoin (clause)
-#   SddLiteral* literals = litset->literals;
-#   SddNode* node        = ONE(manager,op); //will not be gc'd
-#
-#   for(SddLiteral i=0; i<litset->literal_count; i++) {
-#     SddNode* literal = sdd_manager_literal(literals[i],manager);
-#     node             = sdd_apply(node,literal,op,manager);
-#   }
-#
-#   return node;
-# }
-
-
-
+function apply_litset(litset::LitSet, manager::Ptr{SddLibrary.SddManager_c})::Ptr{SddLibrary.SddNode_c}
+    op = litset.op
+    literals = litset.literals
+    node = ONE(manager,op)
+    for i in 1:litset.literal_count
+        literal = SddLibrary.sdd_manager_literal(literals[i], manager)
+        node = SddLibrary.sdd_apply(node, literal, op, manager)
+    end
+    return node
+end
 
 
 # sorting
@@ -202,8 +151,7 @@ function sort_litsets_by_lca(litsets::SubArray{LitSet}, manager::Ptr{SddLibrary.
     for ls in litsets
         ls.vtree = SddLibrary.sdd_manager_lca_of_literals(ls.literal_count, ls.literals, manager)
     end
-    litsets = sort(litsets)
-    return litsets
+    return sort(litsets)
 end
 
 function Base.isless(litset1::LitSet, litset2::LitSet)::Bool
@@ -216,8 +164,8 @@ function Base.isless(litset1::LitSet, litset2::LitSet)::Bool
     sub12 = convert(Bool, SddLibrary.sdd_vtree_is_sub(vtree1,vtree2))
     sub21 = convert(Bool, SddLibrary.sdd_vtree_is_sub(vtree2,vtree1))
 
-    if ((vtree1!=vtree2) & (sub21 | (!sub12 & (p1>p2)))) return true
-    elseif ((vtree1!=vtree2) & (sub12 | (!sub21 & (p1<p2)))) return false
+    if ((vtree1!=vtree2) && (sub21 || (!sub12 && (p1>p2)))) return true
+    elseif ((vtree1!=vtree2) && (sub12 || (!sub21 && (p1<p2)))) return false
     else
         l1 = litset1.literal_count
         l2 = litset2.literal_count
