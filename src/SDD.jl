@@ -4,7 +4,7 @@ module SDD
 using Parameters
 
 include("sddapi.jl")
-include("normal_form.jl")
+include("fnf.jl")
 
 using .SddLibrary
 
