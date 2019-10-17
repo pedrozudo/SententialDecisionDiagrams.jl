@@ -20,7 +20,7 @@ const SddSize = Csize_t
 const SddNodeSize = Cuint
 const SddRefCount = Cuint
 const SddModelCount = Culonglong
-const SddWMC = Cdouble
+const SddWmc = Cdouble
 const SddLiteral = Clong
 
 const SddID = SddSize
@@ -33,7 +33,7 @@ const DISJOIN = convert(BoolOp, 1)
 struct VTree_c end
 struct SddNode_c end
 struct SddManager_c end
-struct SddWmcManager_c end
+struct WmcManager_c end
 
 
 # SDD MANAGER FUNCTIONS
@@ -388,9 +388,34 @@ end
 
 
 
-# # WMC
-#
-
+# WMC
+function wmc_manager_new(node::Ptr{SddNode_c}, log_mode::Cint, manager::Ptr{SddManager_c})::Ptr{WmcManager_c}
+    return ccall((:sdd_manager_new, LIBSDD), Ptr{WmcManager_c}, (Ptr{SddNode_c}, Cint, Ptr{SddManager_c}), node, log_mode, manager)
+end
+function wmc_manager_free(wmc_manager::Ptr{WmcManager_c})
+    ccall((:wmc_manager_free, LIBSDD), Cvoid, (Ptr{WmcManager_c},), wmc_manager)
+end
+function wmc_set_literal_weight(literal::SddLiteral, weight::SddWmc, wmc_manager::Ptr{WmcManager_c})
+    ccall((:wmc_set_literal_weight, LIBSDD), Cvoid, (SddLiteral, SddWmc, Ptr{WmcManager_c}), literal, weight, wmc_manager)
+end
+function wmc_propagate(wmc_manager::Ptr{WmcManager_c})::SddWmc
+    ccall((:wmc_propagate, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
+end
+function wmc_zero_weight(wmc_manager::Ptr{WmcManager_c})::SddWmc
+    ccall((:wmc_zero_weight, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
+end
+function wmc_one_weight(wmc_manager::Ptr{WmcManager_c})::SddWmc
+    ccall((:wmc_one_weight, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
+end
+function wmc_literal_weight(literal::SddLiteral, wmc_manager::Ptr{WmcManager_c})::SddWmc
+    ccall((:wmc_literal_weight, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
+end
+function wmc_literal_derivative(literal::SddLiteral, wmc_manager::Ptr{WmcManager_c})::SddWmc
+    ccall((:wmc_literal_derivative, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
+end
+function wmc_literal_pr(literal::SddLiteral, wmc_manager::Ptr{WmcManager_c})::SddWmc
+    ccall((:wmc_literal_pr, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
+end
 
 
 
@@ -421,15 +446,3 @@ end
 # void sdd_vtree_set_data(void* data, Vtree* vtree);
 # void* sdd_vtree_search_state(const Vtree* vtree);
 # void sdd_vtree_set_search_state(void* search_state, Vtree* vtree);
-
-# // WMC
-# WmcManager* wmc_manager_new(SddNode* node, int log_mode, SddManager* manager);
-# void wmc_manager_free(WmcManager* wmc_manager);
-# void wmc_set_literal_weight(const SddLiteral literal, const SddWmc weight, WmcManager* wmc_manager);
-# SddWmc wmc_propagate(WmcManager* wmc_manager);
-# SddWmc wmc_zero_weight(WmcManager* wmc_manager);
-# SddWmc wmc_one_weight(WmcManager* wmc_manager);
-# SddWmc wmc_literal_weight(const SddLiteral literal, const WmcManager* wmc_manager);
-# SddWmc wmc_literal_derivative(const SddLiteral literal, const WmcManager* wmc_manager);
-# SddWmc wmc_literal_pr(const SddLiteral literal, const WmcManager* wmc_manager);
-#

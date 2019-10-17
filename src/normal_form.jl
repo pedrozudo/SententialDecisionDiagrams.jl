@@ -109,7 +109,6 @@ function fnf_to_sdd_auto(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, option
         SddLibrary.sdd_deref(node, manager)
         node = SddLibrary.sdd_apply(l,node,op,manager)
     end
-    println(litsets)
     return node
 end
 
