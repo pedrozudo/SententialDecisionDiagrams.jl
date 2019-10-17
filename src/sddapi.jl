@@ -3,7 +3,8 @@ module SddLibrary
 
 @static if Sys.isunix()
     @static if Sys.islinux()
-        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Linux/libsdd"
+        # const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Linux/libsdd"
+        const LIBSDD = "/home/pedro/Downloads/sdd-package-2.0/libsdd-2.0/build/libsdd"
     elseif Sys.isapple()
         const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Darwin/libsdd"
     else
@@ -20,7 +21,7 @@ const SddNodeSize = Cuint
 const SddRefCount = Cuint
 const SddModelCount = Culonglong
 const SddWMC = Cdouble
-const SddLiteral = Int64
+const SddLiteral = Clong
 
 const SddID = SddSize
 
@@ -74,8 +75,8 @@ end
 function sdd_manager_vtree_of_var(var::SddLiteral, manager::Ptr{SddManager_c})::Ptr{VTree_c}
     return ccall((:sdd_manager_vtree_of_var, LIBSDD), Ptr{VTree_c}, (SddLiteral, Ptr{SddManager_c}), var, manager)
 end
-function sdd_manager_lca_of_literals(count::SddLiteral, literals::Union{Ptr{SddLiteral},Array{SddLiteral,1}}, manager::Ptr{SddManager_c})::Ptr{VTree_c}
-    return ccall((:sdd_manager_vtree_of_var, LIBSDD), Ptr{VTree_c}, (Int32, Ptr{SddLiteral}, Ptr{SddManager_c}), count, literals, manager)
+function sdd_manager_lca_of_literals(count::SddLiteral, literals::Array{SddLiteral,1}, manager::Ptr{SddManager_c})::Ptr{VTree_c}
+    return ccall((:sdd_manager_lca_of_literals, LIBSDD), Ptr{VTree_c}, (Int32, Ptr{SddLiteral}, Ptr{SddManager_c}), count, literals, manager)
 end
 function sdd_manager_var_count(manager::Ptr{SddManager_c})::SddLiteral
     return ccall((:sdd_manager_var_count, LIBSDD), SddLiteral, (Ptr{SddManager_c},), manager)
@@ -278,8 +279,28 @@ function sdd_vtree_parent(vtree::Ptr{VTree_c})::Ptr{VTree_c}
     return ccall((:sdd_vtree_parent, LIBSDD), Ptr{VTree_c}, (Ptr{VTree_c},), vtree)
 end
 
-# # VTREE FUNCTIONS
-#
+# VTREE FUNCTIONS
+function sdd_vtree_is_leaf(vtree::Ptr{VTree_c})::Cint
+    return ccall((:sdd_vtree_is_leaf, LIBSDD), Cint, (Ptr{VTree_c}, ), vtree)
+end
+function sdd_vtree_is_sub(vtree1::Ptr{VTree_c}, vtree2::Ptr{VTree_c})::Cint
+    return ccall((:sdd_vtree_is_sub, LIBSDD), Cint, (Ptr{VTree_c}, Ptr{VTree_c}), vtree1, vtree2)
+end
+function sdd_vtree_lca(vtree1::Ptr{VTree_c}, vtree2::Ptr{VTree_c}, root::Ptr{VTree_c})::Ptr{VTree_c}
+    return ccall((:sdd_vtree_lca, LIBSDD), Ptr{VTree_c}, (Ptr{VTree_c}, Ptr{VTree_c}, Ptr{VTree_c}), vtree1, vtree2, root)
+end
+function sdd_vtree_var_count(vtree::Ptr{VTree_c})::SddLiteral
+    return ccall((:sdd_vtree_var_count, LIBSDD), SddLiteral, (Ptr{VTree_c}, ), vtree)
+end
+function sdd_vtree_var(vtree::Ptr{VTree_c})::SddLiteral
+    return ccall((:sdd_vtree_var, LIBSDD), SddLiteral, (Ptr{VTree_c}, ), vtree)
+end
+function sdd_vtree_position(vtree::Ptr{VTree_c})::SddLiteral
+    return ccall((:sdd_vtree_position, LIBSDD), SddLiteral, (Ptr{VTree_c}, ), vtree)
+end
+# Vtree** sdd_vtree_location(Vtree* vtree, SddManager* manager);
+
+
 # VTREE/SDD EDIT OPERATIONS
 function sdd_vtree_rotate_left(vtree::Ptr{VTree_c}, manager::Ptr{SddManager_c}, limited::Cint)::Cint
     return ccall((:sdd_vtree_rotate_left, LIBSDD), Cint, (Ptr{VTree_c},Ptr{SddManager_c}, Cint), vtree, manager, limited)
@@ -393,17 +414,6 @@ end
 # SddNode* sdd_rename_variables(SddNode* node, SddLiteral* variable_map, SddManager* manager);
 # int* sdd_variables(SddNode* node, SddManager* manager);
 
-# // VTREE FUNCTIONS
-# int sdd_vtree_is_leaf(const Vtree* vtree);
-# int sdd_vtree_is_sub(const Vtree* vtree1, const Vtree* vtree2);
-# Vtree* sdd_vtree_lca(Vtree* vtree1, Vtree* vtree2, Vtree* root);
-# SddLiteral sdd_vtree_var_count(const Vtree* vtree);
-# SddLiteral sdd_vtree_var(const Vtree* vtree);
-# SddLiteral sdd_vtree_position(const Vtree* vtree);
-# Vtree** sdd_vtree_location(Vtree* vtree, SddManager* manager);
-
-
-#
 # // VTREE STATE
 # int sdd_vtree_bit(const Vtree* vtree);
 # void sdd_vtree_set_bit(int bit, Vtree* vtree);
@@ -411,7 +421,7 @@ end
 # void sdd_vtree_set_data(void* data, Vtree* vtree);
 # void* sdd_vtree_search_state(const Vtree* vtree);
 # void sdd_vtree_set_search_state(void* search_state, Vtree* vtree);
-#
+
 # // WMC
 # WmcManager* wmc_manager_new(SddNode* node, int log_mode, SddManager* manager);
 # void wmc_manager_free(WmcManager* wmc_manager);

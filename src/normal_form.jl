@@ -1,3 +1,4 @@
+# structures
 mutable struct LitSet
     id::SddLibrary.SddSize
     literal_count::SddLibrary.SddLiteral
@@ -16,7 +17,7 @@ mutable struct Fnf
 end
 
 
-
+# i/o
 function read_cnf(filename::String)::Fnf
     return parse_fnf(filename,  convert(SddLibrary.BoolOp,0))
 end
@@ -57,7 +58,7 @@ function parse_fnf(filename::String, op::SddLibrary.BoolOp)::Fnf
         for i in 1:length(terms)
             if terms[i]== "0" break end
             literals[i] = parse(SddLibrary.SddLiteral,terms[i])
-            #TODO add test if i>2varcount
+            #TODO add test if i>2varcount raise
         end
         clause = LitSet()
         clause.id = id
@@ -74,6 +75,7 @@ function parse_fnf(filename::String, op::SddLibrary.BoolOp)::Fnf
 end
 
 
+# compiling
 ONE(M,OP) = (OP==SddLibrary.CONJOIN ? SddLibrary.sdd_manager_false(M) : SddLibrary.sdd_manager_true(M))
 ZERO(M,OP) = (OP==SddLibrary.DISJOIN ? SddLibrary.sdd_manager_true(M) : SddLibrary.sdd_manager_false(M))
 
@@ -98,13 +100,15 @@ end
 
 
 function fnf_to_sdd_auto(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, options)::Ptr{SddLibrary.SddNode_c}
+    # TODO verbose print stuff
     node = ONE(manager,fnf.op)
     count = fnf.litset_count
+    litsets = view(fnf.litsets,:)
     for i in 1:count
-        sort_litsets_by_lca(fnf.litsets[i:end], manager)
-        # SddLibrary.sdd_ref(node, manager)
-
-    # println(fnf.litsets[1].vtree)
+        litsets[i:count] =  sort_litsets_by_lca(view(litsets,i:count), manager)
+        SddLibrary.sdd_ref(node, manager)
+        # l = apply_litset()
+        exit()
     end
     #
     # return node
@@ -193,125 +197,39 @@ end
 
 
 
-
-
-
-
-
-
-
-# void sort_litsets_by_lca(LitSet** litsets, SddSize size, SddManager* manager) {
-#   //compute lcas of litsets
-#   for(SddLiteral i=0; i<size; i++) {
-#     LitSet* litset = litsets[i];
-#     litset->vtree  = sdd_manager_lca_of_literals(litset->literal_count,litset->literals,manager);
-#   }
-#   //sort
-#   qsort((LitSet**)litsets,size,sizeof(LitSet*),litset_cmp_lca);
-# }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# void free_fnf(Fnf* fnf);
-#
-#
-# /****************************************************************************************
-#  * forward references
-#  ****************************************************************************************/
-#
-# void sort_litsets_by_lca(LitSet** litsets, SddSize litset_count, SddManager* manager);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function sort_litsets_by_lca(litsets::Array{LitSet}, manager::Ptr{SddLibrary.SddManager_c})
-
+# sorting
+function sort_litsets_by_lca(litsets::SubArray{LitSet}, manager::Ptr{SddLibrary.SddManager_c})::Array{LitSet}
     for ls in litsets
         ls.vtree = SddLibrary.sdd_manager_lca_of_literals(ls.literal_count, ls.literals, manager)
-
     end
-
-    # return fnf
+    litsets = sort(litsets)
+    return litsets
 end
 
+function Base.isless(litset1::LitSet, litset2::LitSet)::Bool
+    vtree1 = litset1.vtree
+    vtree2 = litset2.vtree
 
+    p1 = SddLibrary.sdd_vtree_position(vtree1)
+    p2 = SddLibrary.sdd_vtree_position(vtree2)
 
+    sub12 = convert(Bool, SddLibrary.sdd_vtree_is_sub(vtree1,vtree2))
+    sub21 = convert(Bool, SddLibrary.sdd_vtree_is_sub(vtree2,vtree1))
 
-
-
-# //first: incomparable lcas are left to right, comparabale lcas are top to down
-# //then: shorter to larger litsets
-# //last: by id to obtain unique order
-# void sort_litsets_by_lca(LitSet** litsets, SddSize size, SddManager* manager) {
-#   //compute lcas of litsets
-#   for(SddLiteral i=0; i<size; i++) {
-#     LitSet* litset = litsets[i];
-#     litset->vtree  = sdd_manager_lca_of_literals(litset->literal_count,litset->literals,manager);
-#   }
-#   //sort
-#   qsort((LitSet**)litsets,size,sizeof(LitSet*),litset_cmp_lca);
-# }
-
-
-
-
-
-
-# int litset_cmp_lca(const void* litset1_loc, const void* litset2_loc) {
-#
-#   LitSet* litset1 = *(LitSet**)litset1_loc;
-#   LitSet* litset2 = *(LitSet**)litset2_loc;
-#
-#   Vtree* vtree1 = litset1->vtree;
-#   Vtree* vtree2 = litset2->vtree;
-#   SddLiteral p1 = sdd_vtree_position(vtree1);
-#   SddLiteral p2 = sdd_vtree_position(vtree2);
-#
-#   if(vtree1!=vtree2 && (sdd_vtree_is_sub(vtree2,vtree1) || (!sdd_vtree_is_sub(vtree1,vtree2) && (p1 > p2)))) return 1;
-#   else if(vtree1!=vtree2 && (sdd_vtree_is_sub(vtree1,vtree2) || (!sdd_vtree_is_sub(vtree2,vtree1) && (p1 < p2)))) return -1;
-#   else {
-#
-#   SddLiteral l1 = litset1->literal_count;
-#   SddLiteral l2 = litset2->literal_count;
-#
-#   if(l1 > l2) return 1;
-#   else if(l1 < l2) return -1;
-#   else {
-#     //so the litset order is unique
-#   	//without this, final litset order may depend on system
-#     SddSize id1 = litset1->id;
-#     SddSize id2 = litset2->id;
-#     if(id1 > id2) return 1;
-#     else if(id1 < id2) return -1;
-#     else return 0;
-#   }
-#   }
-# }
-#
+    if ((vtree1!=vtree2) & (sub21 | (!sub12 & (p1>p2)))) return true
+    elseif ((vtree1!=vtree2) & (sub12 | (!sub21 & (p1<p2)))) return false
+    else
+        l1 = litset1.literal_count
+        l2 = litset2.literal_count
+        if l1>l2 return true
+        elseif l1<l2 return false
+        else
+            id1 = litset.id
+            id2 = litset.id
+            if id1>id2 return true
+            elseif id1<id2 return false
+            else return false
+            end
+        end
+    end
+end
