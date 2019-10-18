@@ -17,7 +17,7 @@ git clone https://github.com/pedrozudo/SDD.jl
 ```
 cd into the cloned directory and run any of the test files
 ```
-cd SDD.jl.examples
+cd SDD.jl
 julia examples/test-1.jl
 ```
 
@@ -38,7 +38,7 @@ Other languages:
 
 Julia SDD wrapper:
 
-Copyright 2017-2018, KU Leuven under the Apache License, Version 2.0.
+Copyright 2019, KU Leuven under the Apache License, Version 2.0.
 
 
 SDD package:
