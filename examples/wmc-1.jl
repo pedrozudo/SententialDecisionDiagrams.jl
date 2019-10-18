@@ -1,5 +1,4 @@
-include("../src/SDD.jl")
-using .SDD
+using SDD
 
 # set up vtree and manager
 vtree = SDD.read_vtree("$(@__DIR__)/input/simple.vtree")
