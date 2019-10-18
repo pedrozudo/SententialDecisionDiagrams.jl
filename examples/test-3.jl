@@ -2,7 +2,7 @@ using SDD
 
 # set up vtree and manager
 vtree = SDD.read_vtree("$(@__DIR__)/input/opt-swap.vtree")
-manager = SDD.manager(vtree)
+manager = SDD.sdd_manager(vtree)
 
 println("reading sdd from file ...")
 α = SDD.read_sdd("$(@__DIR__)/input/opt-swap.sdd", manager)

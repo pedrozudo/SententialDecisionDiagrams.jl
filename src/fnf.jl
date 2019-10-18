@@ -73,8 +73,8 @@ end
 
 
 # compiling
-ONE(M,OP) = (OP==SddLibrary.CONJOIN ? SddLibrary.sdd_manager_false(M) : SddLibrary.sdd_manager_true(M))
-ZERO(M,OP) = (OP==SddLibrary.DISJOIN ? SddLibrary.sdd_manager_true(M) : SddLibrary.sdd_manager_false(M))
+ZERO(M,OP) = (OP==SddLibrary.CONJOIN ? SddLibrary.sdd_manager_false(M) : SddLibrary.sdd_manager_true(M))
+ONE(M,OP) = (OP==SddLibrary.CONJOIN ? SddLibrary.sdd_manager_true(M) : SddLibrary.sdd_manager_false(M))
 
 function fnf_to_sdd(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, options)::Ptr{SddLibrary.SddNode_c}
     # degenarate fnf

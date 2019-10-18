@@ -4,7 +4,7 @@ using SDD
 var_count = 4
 vtree_type = "right"
 vtree = SDD.vtree(var_count, vtree_type)
-manager = SDD.manager(vtree)
+manager = SDD.sdd_manager(vtree)
 
 x = [SDD.literal(i,manager) for i in 1:5]
 

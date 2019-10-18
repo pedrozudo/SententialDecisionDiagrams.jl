@@ -439,8 +439,9 @@ end
 function free(manager::WmcManager)
     SddLibrary.wmc_manager_free(manager.manager)
 end
-function set_literal_weight(literal::Integer, weight::Real, manager::WmcManager)
-    SddLibrary.wmc_set_literal_weight(convert(SddLibrary.SddLiteral,iteral), convert(SddLibrary.SddWmc, weight), manager.manager)
+function set_literal_weight(node::SddNode, weight::Real, manager::WmcManager)
+    literal = SddLibrary.sdd_node_literal(node.node)
+    SddLibrary.wmc_set_literal_weight(literal, convert(SddLibrary.SddWmc, weight), manager.manager)
 end
 function propagate(manager::WmcManager)::SddLibrary.SddWmc
     return SddLibrary.wmc_propagate(manager.manager)

@@ -11,27 +11,21 @@ root = SDD.read_cnf("$(@__DIR__)/input/simple.cnf", sdd, compiler_options=SDD.Co
 
 # Model Counting
 wmc = SDD.wmc_manager(root, log_mode=true)
-println(wmc)
-println(SDD.one(wmc))
-println(SDD.zero(wmc))
 w = SDD.propagate(wmc)
-# println(wmc)
-#     print(f"Model count: {int(math.exp(w))}")
-#
+println("Model count: $(convert(Int32,exp(w)))")
+
 # Weighted Model Counting
-# lits = [SDD.literal(i,sdd) for i in 1:SDD.var_count(sdd)]
-# println(lits)
+lits = [SDD.literal(i,sdd) for i in 1:SDD.var_count(sdd)]
+
 # Positive literal weight
-# SDD.set_literal_weight(lits[1], log(0.5), wmc)
-#     # Negative literal weight
-#     wmc.set_literal_weight(-lits[1], math.log(0.5))
-#     w = wmc.propagate()
-#     print(f"Weighted model count: {math.exp(w)}")
-#
-#     # Visualize SDD and VTREE
-#     print("saving sdd and vtree ... ", end="")
-#     with open(here / "output" / "sdd.dot", "w") as out:
-#         print(sdd.dot(), file=out)
-# with open(here / "output" / "vtree.dot", "w") as out:
-#         print(vtree.dot(), file=out)
-# println("done")
+SDD.set_literal_weight(lits[1], log(0.5), wmc)
+# Negative literal weight
+SDD.set_literal_weight(~lits[1], log(0.5), wmc)
+
+w = SDD.propagate(wmc)
+println("Weighted model count: $(exp(w))")
+
+# Visualize SDD and VTREE
+println("saving sdd and vtree ... ")
+SDD.dot("$(@__DIR__)/output/simple-vtree.dot", vtree)
+SDD.dot("$(@__DIR__)/output/simple-sdd-cnf.dot", root)

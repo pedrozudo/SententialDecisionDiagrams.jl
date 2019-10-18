@@ -2,7 +2,7 @@ using SDD
 
 # set up vtree and manager
 vtree = SDD.read_vtree("$(@__DIR__)/input/rotate-left.vtree")
-manager = SDD.manager(vtree)
+manager = SDD.sdd_manager(vtree)
 
 # construct the term X_1 ^ X_2 ^ X_3 ^ X_4
 x = [SDD.literal(i,manager) for i in 1:5]

@@ -3,8 +3,10 @@ module SddLibrary
 
 @static if Sys.isunix()
     @static if Sys.islinux()
-        # const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Linux/libsdd"
-        const LIBSDD = "/home/pedro/Downloads/sdd-package-2.0/libsdd-2.0/build/libsdd"
+        const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Linux/libsdd"
+        # const LIBSDD = "/home/pedro/Downloads/sdd-package-2.0/libsdd-2.0/build/libsdd"
+        # const LIBSDD = "/home/pedro/Downloads/sdd-package-2.0/libsdd-2.0/debug/libsdd"
+
     elseif Sys.isapple()
         const LIBSDD = "$(@__DIR__)/../deps/sdd-2.0/lib/Darwin/libsdd"
     else
@@ -390,7 +392,7 @@ end
 
 # WMC
 function wmc_manager_new(node::Ptr{SddNode_c}, log_mode::Cint, manager::Ptr{SddManager_c})::Ptr{WmcManager_c}
-    return ccall((:sdd_manager_new, LIBSDD), Ptr{WmcManager_c}, (Ptr{SddNode_c}, Cint, Ptr{SddManager_c}), node, log_mode, manager)
+    return ccall((:wmc_manager_new, LIBSDD), Ptr{WmcManager_c}, (Ptr{SddNode_c}, Cint, Ptr{SddManager_c}), node, log_mode, manager)
 end
 function wmc_manager_free(wmc_manager::Ptr{WmcManager_c})
     ccall((:wmc_manager_free, LIBSDD), Cvoid, (Ptr{WmcManager_c},), wmc_manager)
@@ -399,22 +401,22 @@ function wmc_set_literal_weight(literal::SddLiteral, weight::SddWmc, wmc_manager
     ccall((:wmc_set_literal_weight, LIBSDD), Cvoid, (SddLiteral, SddWmc, Ptr{WmcManager_c}), literal, weight, wmc_manager)
 end
 function wmc_propagate(wmc_manager::Ptr{WmcManager_c})::SddWmc
-    ccall((:wmc_propagate, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
+    return ccall((:wmc_propagate, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
 end
 function wmc_zero_weight(wmc_manager::Ptr{WmcManager_c})::SddWmc
-    ccall((:wmc_zero_weight, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
+    return ccall((:wmc_zero_weight, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
 end
 function wmc_one_weight(wmc_manager::Ptr{WmcManager_c})::SddWmc
-    ccall((:wmc_one_weight, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
+    return ccall((:wmc_one_weight, LIBSDD), SddWmc, (Ptr{WmcManager_c},), wmc_manager)
 end
 function wmc_literal_weight(literal::SddLiteral, wmc_manager::Ptr{WmcManager_c})::SddWmc
-    ccall((:wmc_literal_weight, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
+    return ccall((:wmc_literal_weight, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
 end
 function wmc_literal_derivative(literal::SddLiteral, wmc_manager::Ptr{WmcManager_c})::SddWmc
-    ccall((:wmc_literal_derivative, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
+    return ccall((:wmc_literal_derivative, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
 end
 function wmc_literal_pr(literal::SddLiteral, wmc_manager::Ptr{WmcManager_c})::SddWmc
-    ccall((:wmc_literal_pr, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
+    return ccall((:wmc_literal_pr, LIBSDD), SddWmc, (SddLiteral, Ptr{WmcManager_c}), literal, wmc_manager)
 end
 
 
