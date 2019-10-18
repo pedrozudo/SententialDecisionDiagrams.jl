@@ -52,7 +52,6 @@ function parse_fnf(filename::String, op::SddLibrary.BoolOp)::Fnf
     litsets = LitSet[]
     for c in lines[n_extra_lines+1:end]
         id += 1
-        literals = SddLibrary.SddLiteral[]
         terms = split(c)
         literals = Array{SddLibrary.SddLiteral}(undef, 2var_count)
         for i in 1:length(terms)
