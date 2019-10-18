@@ -1,18 +1,22 @@
 #TODO add bangs for functions that modify argument(s)
 module SDD
 
+using Parameters
+
 include("sddapi.jl")
-include("compiler.jl")
+include("fnf.jl")
 
 using .SddLibrary
-using .SddCompiler
+
 
 struct VTree
     vtree::Ptr{SddLibrary.VTree_c}
 end
+
 struct SddManager
     manager::Ptr{SddLibrary.SddManager_c}
 end
+
 struct SddNode
     node::Ptr{SddLibrary.SddNode_c}
     manager::Ptr{SddLibrary.SddManager_c}
@@ -23,21 +27,70 @@ struct PrimeSub
     sub::SddLibrary.SddNode_c
 end
 
+struct WmcManager
+    manager::Ptr{SddLibrary.WmcManager_c}
+end
+
 function str_to_char(vtree_type::String)::Ptr{UInt8}
     return pointer(vtree_type)
 end
 
 # SDD MANAGER FUNCTIONS
-function manager(vtree::VTree)::SddManager
+function sdd_manager(vtree::VTree)::SddManager
     manager = SddLibrary.sdd_manager_new(vtree.vtree)
     return SddManager(manager)
+end
+function sdd_manager(var_count::Integer,  auto_gc_and_minimize::Bool)::SddManager
+    manager = SddLibrary.sdd_manager_create(convert(SddLibrary.SddLiteral, var_count), auto_gc_and_minimize)
+    return SddManager(manager)
+end
+# TODO function manager_new
+function free(manager::SddManager)
+    SddLibrary.sdd_manager_free(manager.manager)
 end
 function Base.print(manager::SddManager)
     SddLibrary.sdd_manager_print(manager.manager)
 end
-
-function free(manager::SddManager)
-    SddLibrary.sdd_manager_free(manager.manager)
+function auto_gc_and_minimize_on(manager::SddManager)
+    SddLibrary.sdd_manager_auto_gc_and_minimize_on(manager.manager)
+end
+function sdd_manager_auto_gc_and_minimize_off(manager::SddManager)
+    SddLibrary.sdd_manager_auto_gc_and_minimize_off(manager.manager)
+end
+function is_auto_gc_and_minimize_on(manager::SddManager)::Bool
+    return convert(Bool, SddLibrary.sdd_manager_is_auto_gc_and_minimize_on(manager.manager))
+end
+# TODO void sdd_manager_set_minimize_function
+function unset_minimize_function(manager::SddManager)
+    SddLI.sdd_manager_unset_minimize_function(manager.manager)
+end
+function options(manager::SddManager)
+    SddLI.sdd_manager_options(manager.manager)
+end
+# TODO void sdd_manager_set_options(void* options, SddManager* manager);
+function is_var_used(var::Integer, manager::SddManager)::Bool
+    return convert(Bool, SddLibrary.sdd_manager_is_var_used(convert(SddLibrary.SddLiteral, var),manager.manager))
+end
+function vtree_of_var(var::Integer, manager::SddManager)::VTree
+    vtree = SddLibrary.sdd_manager_vtree_of_var(convert(SddLibrary.SddLiteral, var), manager.manager)
+    return VTree(vtree)
+end
+# TODO Vtree* sdd_manager_lca_of_literals(int count, SddLiteral* literals, SddManager* manager);
+function var_count(manager::SddManager)::SddLibrary.SddLiteral
+    return SddLibrary.sdd_manager_var_count(manager.manager)
+end
+# TODO void sdd_manager_var_order(SddLiteral* var_order, SddManager *manager);
+function add_var_before_first(manager::SddManager)
+    SddLibrary.sdd_manager_add_var_before_first(manager.manager)
+end
+function add_var_after_last(manager::SddManager)
+    SddLibrary.sdd_manager_add_var_after_last(manager.manager)
+end
+function add_var_before(manager::SddManager)
+    SddLibrary.sdd_manager_add_var_before(manager.manager)
+end
+function add_var_after(manager::SddManager)
+    SddLibrary.sdd_manager_add_var_after(manager.manager)
 end
 
 # TERMINAL SDDS
@@ -50,7 +103,7 @@ function literal(tf::Bool, manager::SddManager)::SddNode
     return SddNode(node, manager.manager)
 end
 function literal(literal::Integer, manager::SddManager)::SddNode
-    node = SddLibrary.sdd_manager_literal(convert(UInt64, literal), manager.manager)
+    node = SddLibrary.sdd_manager_literal(convert(SddLibrary.SddLiteral, literal), manager.manager)
     return SddNode(node, manager.manager)
 end
 
@@ -72,11 +125,11 @@ function negate(node::SddNode, manager::SddManager)::SddNode
     return SddNode(node, manager.manager)
 end
 function condition(lit::Integer, node::SddNode, manager::SddManager)::SddNode
-    node = SddLibrary.sdd_condition(convert(SddLiteral,lit), node.node, manager.manager)
+    node = SddLibrary.sdd_condition(convert(SddLibrary.SddLiteral,lit), node.node, manager.manager)
     return SddNode(node, manager.manager)
 end
 function exists(lit::Integer, node::SddNode, manager::SddManager)::SddNode
-    node = SddLibrary.sdd_exists(convert(SddLiteral,lit), node.node, manager.manager)
+    node = SddLibrary.sdd_exists(convert(SddLibrary.SddLiteral,lit), node.node, manager.manager)
     return SddNode(node, manager.manager)
 end
 function exists_multiple(exists_map::Array{Integer,1}, node::SddNode, manager::SddManager; static::Bool=false)::SddNode
@@ -88,7 +141,7 @@ function exists_multiple(exists_map::Array{Integer,1}, node::SddNode, manager::S
     return SddNode(node, manager.manager)
 end
 function for_all(lit::Integer, node::SddNode, manager::SddManager)::SddNode
-    node = SddLibrary.sdd_forall(convert(SddLiteral,lit), node.node, manager.manager)
+    node = SddLibrary.sdd_forall(convert(SddLibrary.SddLiteral,lit), node.node, manager.manager)
     return SddNode(node, manager.manager)
 end
 function minimize_cardinality(node::SddNode, manager::SddManager; globally::Bool=false)::SddNode
@@ -181,7 +234,7 @@ end
 function size(node::SddNode)::SddLibrary.SddSize
     return SddLibrary.sdd_size(node.node)
 end
-# //SDD OF MANAGER
+# SDD OF MANAGER
 manager_size_fnames_c = [
     "size", "live_size", "dead_size",
     "count", "live_count", "dead_count"
@@ -242,15 +295,72 @@ function save_as_dot(filename::String, vtree::VTree)
 end
 
 # SDD MANAGER VTREE
+function vtree(manager::SddManager; copy::Bool=false)::VTree
+    if !copy
+        vtree = SddLibrary.sdd_manager_vtree(manager.manager)
+        return VTree(vtree)
+    else
+        vtree = SddLibrary.sdd_manager_vtree_copy(manager.manager)
+        return VTree(vtree)
+    end
+end
 
-# # VTREE NAVIGATION
-#
-# # VTREE FUNCTIONS
-#
-# # VTREE/SDD EDIT OPERATIONS
-#
-# # LIMITS FOR VTREE/SDD EDIT OPERATIONS
-#
+# VTREE NAVIGATION
+function left(vtree::VTree)::VTree
+    vtree = SddLibrary.sdd_vtree_left(vtree.vtree)
+    return VTree(vtree)
+end
+function right(vtree::VTree)::VTree
+    vtree = SddLibrary.sdd_vtree_right(vtree.vtree)
+    return VTree(vtree)
+end
+function parent(vtree::VTree)::VTree
+    vtree = SddLibrary.sdd_vtree_parent(vtree.vtree)
+    return VTree(vtree)
+end
+
+# VTREE FUNCTIONS
+function is_leaf(vtree::VTree)::Bool
+    return convert(Bool, SddLibrary.sdd_vtree_is_leaf(vtree.vtree))
+end
+function is_sub(vtree1::VTree, vtree2::VTree)::Bool
+    return convert(Bool, SddLibrary.sdd_vtree_is_sub(vtree1.vtree, vtree2.vtree))
+end
+function lca(vtree1::VTree, vtree2::VTree)::VTree
+    vtree =  SddLibrary.sdd_vtree_lca(vtree1.vtree, vtree2.vtree)
+    return VTree(vtree)
+end
+function var_count(vtree::VTree)::SddLibrary.SddLiteral
+    return SddLibrary.sdd_vtree_var_count(vtree.vtree)
+end
+function var(vtree::VTree)::SddLibrary.SddLiteral
+    return SddLibrary.sdd_vtree_var(vtree.vtree)
+end
+function position(vtree::VTree)::SddLibrary.SddLiteral
+    return SddLibrary.sdd_vtree_position(vtree.vtree)
+end
+# Vtree** sdd_vtree_location(Vtree* vtree, SddManager* manager);
+
+# VTREE/SDD EDIT OPERATIONS
+function rotate_left(vtree::VTree, manager::SddManager, limited::Union{Bool,Integer})::Bool
+    return convert(Bool, SddLibrary.sdd_vtree_rotate_left(vtree.vtree, manager.manager, convert(Cint, limited)))
+end
+function rotate_right(vtree::VTree, manager::SddManager, limited::Union{Bool,Integer})::Bool
+    return convert(Bool, SddLibrary.sdd_vtree_rotate_right(vtree.vtree, manager.manager, convert(Cint, limited)))
+end
+function swap(vtree::VTree, manager::SddManager, limited::Union{Bool,Integer})::Bool
+    return convert(Bool, SddLibrary.sdd_vtree_swap(vtree.vtree, manager.manager, convert(Cint, limited)))
+end
+
+# LIMITS FOR VTREE/SDD EDIT OPERATIONS
+function init_vtree_size_limit(vtree::VTree, manager::SddManager)
+    SddLibrary.sdd_manager_init_vtree_size_limit(vtree.vtree, manager.manager)
+end
+function update_vtree_size_limit(manager::SddManager)
+    SddLibrary.sdd_manager_update_vtree_size_limit(manager.manager)
+end
+
+
 # # VTREE STATE
 
 # GARBAGE COLLECTION
@@ -321,8 +431,39 @@ function set_vtree_cartesian_product_limit(size_limit::Real, manager::SddManager
     SddLibrary.sdd_manager_set_vtree_cartesian_product_limit(convert(Float32, size_limit), manager.manager)
 end
 
-# # WMC
-#
+# WMC
+function wmc_manager(node::SddNode, log_mode::Bool, manager::SddManager)::WmcManager
+    wmc = SddLibrary.wmc_manager_new(node.node, convert(Cint, log_mode), manager.manager)
+    return WmcManager(wmc)
+end
+function free(manager::WmcManager)
+    SddLibrary.wmc_manager_free(manager.manager)
+end
+function set_literal_weight(node::SddNode, weight::Real, manager::WmcManager)
+    literal = SddLibrary.sdd_node_literal(node.node)
+    SddLibrary.wmc_set_literal_weight(literal, convert(SddLibrary.SddWmc, weight), manager.manager)
+end
+function propagate(manager::WmcManager)::SddLibrary.SddWmc
+    return SddLibrary.wmc_propagate(manager.manager)
+end
+function zero(manager::WmcManager)::SddLibrary.SddWmc
+    return SddLibrary.wmc_zero_weight(manager.manager)
+end
+function one(manager::WmcManager)::SddLibrary.SddWmc
+    return SddLibrary.wmc_one_weight(manager.manager)
+end
+function weight(literal::Integer, manager::WmcManager)::SddLibrary.SddWmc
+    return SddLibrary.wmc_literal_weight(convert(SddLibrary.SddLiteral,iteral), manager.manager)
+end
+function derivative(literal::Integer, manager::WmcManager)::SddLibrary.SddWmc
+    return SddLibrary.wmc_literal_derivative(convert(SddLibrary.SddLiteral,iteral), manager.manager)
+end
+function probability(literal::Integer, manager::WmcManager)::SddLibrary.SddWmc
+    return SddLibrary.wmc_literal_pr(convert(SddLibrary.SddLiteral,iteral), manager.manager)
+end
+
+
+
 
 # CONVENIENCE METHODS
 function conjoin(node1::SddNode, node2::SddNode)::SddNode
@@ -359,14 +500,35 @@ end
 function dot(filename::String, structure::Union{VTree,SddNode})
     save_as_dot(filename, structure)
 end
-
-
+function wmc_manager(node::SddNode; log_mode::Bool=true)::WmcManager
+    wmc = SddLibrary.wmc_manager_new(node.node, convert(Cint, log_mode), node.manager)
+    return WmcManager(wmc)
+end
 
 Base.:&(node1::SddNode, node2::SddNode) = conjoin(node1,node2)
 Base.:|(node1::SddNode, node2::SddNode) = disjoin(node1,node2)
 Base.:~(node::SddNode) = negate(node)
 ↔(left::SddNode, right::SddNode) = equiv(left,right)
 
-export vtree, manager, literal, free, ↔
 
+# FNF methods
+@with_kw struct CompilerOptions
+    vtree_search_mode::Int32 = -1
+    post_search::Bool = false
+    verbose::Bool = false
+end
+
+function read_cnf(filename::String, manager::SddManager; compiler_options=CompilerOptions())::SddNode
+    cnf = read_cnf(filename)
+    sdd_node = fnf_to_sdd(cnf, manager.manager, compiler_options)
+    return SddNode(sdd_node, manager.manager)
+end
+function read_dnf(filename::String, manager::SddManager; compiler_options=CompilerOptions())::SddNode
+    dnf = read_dnf(filename)
+    sdd_node = fnf_to_sdd(dnf, manager.manager, compiler_options)
+    return SddNode(sdd_node, manager.manager)
+end
+
+
+export ↔
 end
