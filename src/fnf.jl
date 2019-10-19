@@ -147,7 +147,7 @@ end
 
 
 # sorting
-function sort_litsets_by_lca(litsets::SubArray{LitSet}, manager::Ptr{SddLibrary.SddManager_c})::Array{LitSet}
+function sort_litsets_by_lca(litsets::Array{LitSet}, manager::Ptr{SddLibrary.SddManager_c})::Array{LitSet}
     for ls in litsets
         ls.vtree = SddLibrary.sdd_manager_lca_of_literals(ls.literal_count, ls.literals, manager)
     end
