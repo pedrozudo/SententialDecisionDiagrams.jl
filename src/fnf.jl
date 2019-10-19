@@ -102,9 +102,9 @@ function fnf_to_sdd_auto(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, option
     node = ONE(manager,fnf.op)
     count = fnf.litset_count
     litsets = view(fnf.litsets,:)
-    for i in 1:count
-        #TODO possible without copying?
-        litsets[i:count] = sort_litsets_by_lca(view(litsets,i:count), manager)
+    # need to convert count to Int64 other sort! does not work
+    for i in 1:convert(Int64,count)
+        litsets[i:count] = sort_litsets_by_lca(view(litsets,i:convert(Int64,count)), manager)
         SddLibrary.sdd_ref(node, manager)
         l = apply_litset(litsets[i], manager)
         SddLibrary.sdd_deref(node, manager)
@@ -120,13 +120,14 @@ function fnf_to_sdd_manual(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, opti
     count = fnf.litset_count
     litsets = view(fnf.litsets,:)
     node = ONE(manager, op)
-    for i in 1:count
+    # need to convert count to Int64 other sort! does not work
+    for i in 1:convert(Int64,count)
         if (period>0) && (i>1) && ((i-1)%period==0)
             SddLibrary.sdd_ref(node, manager)
             SddLibrary.sdd_manager_minimize_limited(manager)
             SddLibrary.sdd_deref(node, manager)
             #TODO possible without copying?
-            litsets[i:count] = sort_litsets_by_lca(view(litsets,i:count), manager)
+            sort_litsets_by_lca(view(litsets,i:convert(Int64,count)), manager)
         end
         l = apply_litset(litsets[i], manager)
         node = SddLibrary.sdd_apply(l, node, op, manager)
@@ -147,12 +148,11 @@ end
 
 
 # sorting
-function sort_litsets_by_lca(litsets::Array{LitSet}, manager::Ptr{SddLibrary.SddManager_c})::Array{LitSet}
+function sort_litsets_by_lca(litsets::SubArray{LitSet}, manager::Ptr{SddLibrary.SddManager_c})
     for ls in litsets
         ls.vtree = SddLibrary.sdd_manager_lca_of_literals(ls.literal_count, ls.literals, manager)
     end
-
-    return sort(litsets)
+    sort!(litsets)
 end
 
 function Base.isless(litset1, litset2)::Bool
