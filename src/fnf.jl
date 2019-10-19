@@ -17,6 +17,8 @@ mutable struct Fnf
 end
 
 
+
+
 # i/o
 function read_cnf(filename::String)::Fnf
     return parse_fnf(filename,  convert(SddLibrary.BoolOp,0))
@@ -49,10 +51,10 @@ function parse_fnf(filename::String, op::SddLibrary.BoolOp)::Fnf
         end
     end
 
-    litsets = LitSet[]
-    for c in lines[n_extra_lines+1:end]
+    litsets = Array{LitSet}(undef, litset_count)
+    for c in 1:litset_count
         id += 1
-        terms = split(c)
+        terms = split(lines[c+n_extra_lines])
         literals = Array{SddLibrary.SddLiteral}(undef, 2var_count)
         for i in 1:length(terms)
             if terms[i]== "0" break end
@@ -65,7 +67,7 @@ function parse_fnf(filename::String, op::SddLibrary.BoolOp)::Fnf
         clause.op = convert(SddLibrary.BoolOp, 1-op)
         clause.literals = literals
         clause.litset_bit = 0
-        push!(litsets, clause)
+        litsets[c] = clause
     end
     return Fnf(var_count, litset_count, litsets, op)
 end
@@ -102,7 +104,7 @@ function fnf_to_sdd_auto(fnf::Fnf, manager::Ptr{SddLibrary.SddManager_c}, option
     litsets = view(fnf.litsets,:)
     for i in 1:count
         #TODO possible without copying?
-        litsets[i:count] =  sort_litsets_by_lca(view(litsets,i:count), manager)
+        litsets[i:count] = sort_litsets_by_lca(view(litsets,i:count), manager)
         SddLibrary.sdd_ref(node, manager)
         l = apply_litset(litsets[i], manager)
         SddLibrary.sdd_deref(node, manager)
@@ -149,10 +151,11 @@ function sort_litsets_by_lca(litsets::SubArray{LitSet}, manager::Ptr{SddLibrary.
     for ls in litsets
         ls.vtree = SddLibrary.sdd_manager_lca_of_literals(ls.literal_count, ls.literals, manager)
     end
+
     return sort(litsets)
 end
 
-function Base.isless(litset1::LitSet, litset2::LitSet)::Bool
+function Base.isless(litset1, litset2)::Bool
     vtree1 = litset1.vtree
     vtree2 = litset2.vtree
 
