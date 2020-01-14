@@ -1,4 +1,5 @@
-using SDD
+using SententialDecisionDiagrams
+const SDD = SententialDecisionDiagrams
 
 # set up vtree and manager
 var_count = 4

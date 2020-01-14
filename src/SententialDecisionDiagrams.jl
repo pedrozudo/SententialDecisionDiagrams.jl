@@ -1,5 +1,5 @@
 #TODO add bangs for functions that modify argument(s)
-module SDD
+module SententialDecisionDiagrams
 
 using Parameters
 

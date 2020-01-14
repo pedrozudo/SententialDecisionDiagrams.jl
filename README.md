@@ -1,4 +1,4 @@
-# SDD.jl
+# SententialDecisionDiagrams.jl
 
 
 Julia wrapper package to interactively use [Sententical Decision Diagrams (SDD)](http://reasoning.cs.ucla.edu/sdd/).
@@ -7,17 +7,17 @@ Julia wrapper package to interactively use [Sententical Decision Diagrams (SDD)]
 ## Installtion
 
 ```
-pkg> add https://github.com/pedrozudo/SDD.jl
+pkg> add https://github.com/pedrozudo/SententialDecisionDiagrams.jl
 ```
 
 ## Test
 Clone the repo:
 ```
-git clone https://github.com/pedrozudo/SDD.jl
+git clone https://github.com/pedrozudo/SententialDecisionDiagrams.jl
 ```
 cd into the cloned directory and run any of the test files
 ```
-cd SDD.jl
+cd SententialDecisionDiagrams.jl
 julia examples/test-1.jl
 ```
 

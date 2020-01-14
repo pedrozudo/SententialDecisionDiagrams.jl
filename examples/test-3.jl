@@ -1,4 +1,5 @@
-using SDD
+using SententialDecisionDiagrams
+const SDD = SententialDecisionDiagrams
 
 # set up vtree and manager
 vtree = SDD.read_vtree("$(@__DIR__)/input/opt-swap.vtree")
