@@ -7,7 +7,7 @@ Julia wrapper package to interactively use [Sententical Decision Diagrams (SDD)]
 ## Installtion
 
 ```
-pkg> add https://github.com/pedrozudo/SententialDecisionDiagrams.jl
+pkg> add SententialDecisionDiagrams
 ```
 
 ## Test
