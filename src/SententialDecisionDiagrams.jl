@@ -453,13 +453,13 @@ function one(manager::WmcManager)::SddLibrary.SddWmc
     return SddLibrary.wmc_one_weight(manager.manager)
 end
 function weight(literal::Integer, manager::WmcManager)::SddLibrary.SddWmc
-    return SddLibrary.wmc_literal_weight(convert(SddLibrary.SddLiteral,iteral), manager.manager)
+    return SddLibrary.wmc_literal_weight(convert(SddLibrary.SddLiteral, literal), manager.manager)
 end
 function derivative(literal::Integer, manager::WmcManager)::SddLibrary.SddWmc
-    return SddLibrary.wmc_literal_derivative(convert(SddLibrary.SddLiteral,iteral), manager.manager)
+    return SddLibrary.wmc_literal_derivative(convert(SddLibrary.SddLiteral, literal), manager.manager)
 end
 function probability(literal::Integer, manager::WmcManager)::SddLibrary.SddWmc
-    return SddLibrary.wmc_literal_pr(convert(SddLibrary.SddLiteral,iteral), manager.manager)
+    return SddLibrary.wmc_literal_pr(convert(SddLibrary.SddLiteral, literal), manager.manager)
 end
 
 
