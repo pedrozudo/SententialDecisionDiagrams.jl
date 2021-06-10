@@ -23,8 +23,8 @@ struct SddNode
 end
 
 struct PrimeSub
-    prime::SddLibrary.SddNode_c
-    sub::SddLibrary.SddNode_c
+    prime::SddNode
+    sub::SddNode
 end
 
 struct WmcManager
@@ -193,9 +193,9 @@ function elements(node::SddNode)::Array{PrimeSub,1}
     primesubs = PrimeSub[]
     for i in 0:m-1
         e = unsafe_load(elements_ptr+i)
-        p = unsafe_load(e)
-        s =unsafe_load(e+1)
-        push!(primesubs, PrimeSub(p,s))
+        p = SddNodde(e, node.manager)
+        s = SddNode(e+1, node.manager)
+        push!(primesubs, PrimeSub(p, s))
     end
     return primesubs
 end
@@ -211,7 +211,7 @@ end
 # # SDD FUNCTIONS
 
 # SDD FILE I/O
-#TODO make this safer
+# TODO make this safer
 function read_sdd(filename::String, manager::SddManager)::SddNode
     node = SddLibrary.sdd_read(str_to_char(filename), manager.manager)
     return SddNode(node, manager.manager)
