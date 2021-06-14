@@ -1,4 +1,4 @@
-#TODO add bangs for functions that modify argument(s)
+# TODO add bangs for functions that modify argument(s)
 module SententialDecisionDiagrams
 
 using Parameters
@@ -69,7 +69,7 @@ function options(manager::SddManager)
 end
 # TODO void sdd_manager_set_options(void* options, SddManager* manager);
 function is_var_used(var::Integer, manager::SddManager)::Bool
-    return convert(Bool, SddLibrary.sdd_manager_is_var_used(convert(SddLibrary.SddLiteral, var),manager.manager))
+    return convert(Bool, SddLibrary.sdd_manager_is_var_used(convert(SddLibrary.SddLiteral, var), manager.manager))
 end
 function vtree_of_var(var::Integer, manager::SddManager)::VTree
     vtree = SddLibrary.sdd_manager_vtree_of_var(convert(SddLibrary.SddLiteral, var), manager.manager)
@@ -95,7 +95,7 @@ end
 
 # TERMINAL SDDS
 function literal(value::Bool, manager::SddManager)::SddNode
-    if value
+    if value 
         node = SddLibrary.sdd_manager_true(manager.manager)
     else
         node = SddLibrary.sdd_manager_false(manager.manager)
@@ -125,27 +125,27 @@ function negate(node::SddNode, manager::SddManager)::SddNode
     return SddNode(node, manager.manager)
 end
 function condition(lit::Integer, node::SddNode, manager::SddManager)::SddNode
-    node = SddLibrary.sdd_condition(convert(SddLibrary.SddLiteral,lit), node.node, manager.manager)
+    node = SddLibrary.sdd_condition(convert(SddLibrary.SddLiteral, lit), node.node, manager.manager)
     return SddNode(node, manager.manager)
 end
 function exists(lit::Integer, node::SddNode, manager::SddManager)::SddNode
-    node = SddLibrary.sdd_exists(convert(SddLibrary.SddLiteral,lit), node.node, manager.manager)
+    node = SddLibrary.sdd_exists(convert(SddLibrary.SddLiteral, lit), node.node, manager.manager)
     return SddNode(node, manager.manager)
 end
 function exists_multiple(exists_map::Array{Integer,1}, node::SddNode, manager::SddManager; static::Bool=false)::SddNode
-    if  !static
-        node = SddLibrary.sdd_exists(convert(Array{Cint,1},exists_map), node.node, manager.manager)
+    if !static
+        node = SddLibrary.sdd_exists(convert(Array{Cint,1}, exists_map), node.node, manager.manager)
     else
-        node = SddLibrary.sdd_exists_multiple_static(convert(Array{Cint,1},exists_map), node.node, manager.manager)
+        node = SddLibrary.sdd_exists_multiple_static(convert(Array{Cint,1}, exists_map), node.node, manager.manager)
     end
     return SddNode(node, manager.manager)
 end
 function for_all(lit::Integer, node::SddNode, manager::SddManager)::SddNode
-    node = SddLibrary.sdd_forall(convert(SddLibrary.SddLiteral,lit), node.node, manager.manager)
+    node = SddLibrary.sdd_forall(convert(SddLibrary.SddLiteral, lit), node.node, manager.manager)
     return SddNode(node, manager.manager)
 end
 function minimize_cardinality(node::SddNode, manager::SddManager; globally::Bool=false)::SddNode
-    if  !globally
+    if !globally
         node = SddLibrary.sdd_minimize_cardinality(node.node, manager.manager)
     else
         node = SddLibrary.sdd_global_minimize_cardinality(node.node, manager.manager)
@@ -191,10 +191,10 @@ function elements(node::SddNode)::Array{PrimeSub,1}
     elements_ptr = SddLibrary.sdd_node_elements(node.node)
     m = size(node)
     primesubs = PrimeSub[]
-    for i in 0:m-1
-        e = unsafe_load(elements_ptr+i)
+    for i in 0:m - 1
+        e = unsafe_load(elements_ptr + i)
         p = SddNode(e, node.manager)
-        s = SddNode(e+1, node.manager)
+        s = SddNode(e + 1, node.manager)
         push!(primesubs, PrimeSub(p, s))
     end
     return primesubs
@@ -239,7 +239,7 @@ manager_size_fnames_c = [
     "size", "live_size", "dead_size",
     "count", "live_count", "dead_count"
 ]
-for (fnj,fnc) in zip(manager_size_fnames_c, SddLibrary.manager_size_fnames_c)
+for (fnj, fnc) in zip(manager_size_fnames_c, SddLibrary.manager_size_fnames_c)
     @eval begin
         function $(Symbol(fnj))(manager::SddManager)::SddLibrary.SddSize
             return ((SddLibrary).$(Symbol(fnc)))(manager.manager)
@@ -255,7 +255,7 @@ vtree_size_fnames_j = [
     "count_at", "live_count_at", "dead_count_at",
     "count_above", "live_count_above", "dead_count_above"
 ]
-for (fnj,fnc) in zip(vtree_size_fnames_j, SddLibrary.vtree_size_fnames_c)
+for (fnj, fnc) in zip(vtree_size_fnames_j, SddLibrary.vtree_size_fnames_c)
     @eval begin
         function $(Symbol(fnj))(vtree::VTree)::SddLibrary.SddSize
             return ((SddLibrary).$(Symbol(fnc)))(vtree.vtree)
@@ -265,15 +265,15 @@ end
 
 # CREATING VTREES
 function vtree(var_count::Integer, vtree_type::String)::VTree
-    vtree = SddLibrary.sdd_vtree_new(convert(SddLibrary.SddLiteral,var_count), str_to_char(vtree_type))
+    vtree = SddLibrary.sdd_vtree_new(convert(SddLibrary.SddLiteral, var_count), str_to_char(vtree_type))
     return VTree(vtree)
 end
 function vtree(var_count::Integer, order::Array{<:Integer,1}, vtree_type::String; order_type::String="var_order")::VTree
     @assert order_type in Set(["var_order", "is_X_var"]) "$order_type not in a valid order type (var_order, is_X_var]"
-    if order_type=="var_order"
-        vtree = SddLibrary.sdd_vtree_new_with_var_order(convert(SddLibrary.SddLiteral,var_count), convert(Array{SddLibrary.SddLiteral,1},order), str_to_char(vtree_type))
-    elseif order_type=="is_X_var"
-        vtree = SddLibrary.sdd_vtree_new_X_constrained(convert(SddLibrary.SddLiteral,var_count), convert(Array{SddLibrary.SddLiteral,1},order), str_to_char(vtree_type))
+    if order_type == "var_order"
+        vtree = SddLibrary.sdd_vtree_new_with_var_order(convert(SddLibrary.SddLiteral, var_count), convert(Array{SddLibrary.SddLiteral,1}, order), str_to_char(vtree_type))
+    elseif order_type == "is_X_var"
+        vtree = SddLibrary.sdd_vtree_new_X_constrained(convert(SddLibrary.SddLiteral, var_count), convert(Array{SddLibrary.SddLiteral,1}, order), str_to_char(vtree_type))
     end
     return VTree(vtree)
 end
@@ -389,8 +389,8 @@ function garbage_collect_if(dead_node_threshold::Real, vtree::VTree, manager::Sd
 end
 
 # MINIMIZATION
-function  minimize(manager::SddManager; limited::Bool=false)
-    if  !limited
+function minimize(manager::SddManager; limited::Bool=false)
+    if !limited
         SddLibrary.sdd_manager_minimize(manager.manager)
     else
         SddLibrary.sdd_manager_minimize_limited(manager.manager)
@@ -482,7 +482,7 @@ function equiv(left::SddNode, right::SddNode)::SddNode
     return (!left | right) & (left | !right)
 end
 function model_count(node::SddNode; globally::Bool=false)::SddLibrary.SddModelCount
-    if  !globally
+    if !globally
         return SddLibrary.sdd_model_count(node.node, node.manager)
     else
         return SddLibrary.sdd_global_model_count(node.node, node.manager)
@@ -505,10 +505,10 @@ function wmc_manager(node::SddNode; log_mode::Bool=true)::WmcManager
     return WmcManager(wmc)
 end
 
-Base.:&(node1::SddNode, node2::SddNode) = conjoin(node1,node2)
-Base.:|(node1::SddNode, node2::SddNode) = disjoin(node1,node2)
+Base.:&(node1::SddNode, node2::SddNode) = conjoin(node1, node2)
+Base.:|(node1::SddNode, node2::SddNode) = disjoin(node1, node2)
 Base.:~(node::SddNode) = negate(node)
-↔(left::SddNode, right::SddNode) = equiv(left,right)
+↔(left::SddNode, right::SddNode) = equiv(left, right)
 
 
 # FNF methods
