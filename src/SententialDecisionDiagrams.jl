@@ -94,11 +94,11 @@ function add_var_after(manager::SddManager)
 end
 
 # TERMINAL SDDS
-function literal(tf::Bool, manager::SddManager)::SddNode
-    if !tf
-        node = SddLibrary.sdd_manager_false(manager.manager)
-    elseif tf
+function literal(value::Bool, manager::SddManager)::SddNode
+    if value 
         node = SddLibrary.sdd_manager_true(manager.manager)
+    else
+        node = SddLibrary.sdd_manager_false(manager.manager)
     end
     return SddNode(node, manager.manager)
 end
