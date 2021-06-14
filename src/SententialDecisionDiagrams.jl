@@ -193,7 +193,7 @@ function elements(node::SddNode)::Array{PrimeSub,1}
     primesubs = PrimeSub[]
     for i in 0:m-1
         e = unsafe_load(elements_ptr+i)
-        p = SddNodde(e, node.manager)
+        p = SddNode(e, node.manager)
         s = SddNode(e+1, node.manager)
         push!(primesubs, PrimeSub(p, s))
     end
